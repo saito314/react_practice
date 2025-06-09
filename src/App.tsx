@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
-import logo from './logo.svg';
 import './App.css';
+import { on } from 'events';
 
 
 function Square({
@@ -43,12 +43,11 @@ function calculateWinner(squares: Array<string | null>) {
 }
 
 
-export default function Board() {
-
-  // 先手がデフォルトでXになるように設定
-  const [xIsNext, setXIsNext] = useState(true);
-  // 9つのブロックの状態を管理する
-  const [squares, setSquares] = useState(Array(9).fill(null));
+function Board({ xIsNext, squares, onPlay }: {
+  xIsNext: boolean;
+  squares: Array<string | null>;
+  onPlay: (nextSquares: Array<string | null>) => void;
+}) {
 
   // ブロックがクリックされたときの処理
   function handleClick(i: number) {
@@ -58,15 +57,15 @@ export default function Board() {
       return;
     }
 
+    // 新しい状態を作成して更新
     const nextSquares = squares.slice();
     if (xIsNext) {
-      nextSquares[i] = "X";
-    } else {
       nextSquares[i] = "O";
+    } else {
+      nextSquares[i] = "X";
     }
     
-    setSquares(nextSquares);
-    setXIsNext(!xIsNext);
+    onPlay(nextSquares);
   }
 
   const winner = calculateWinner(squares);
@@ -74,9 +73,12 @@ export default function Board() {
   if (winner) {
     status = `Winner: ${winner}`;
   } else {
-    status = `Next player: ${xIsNext ? 'X' : 'O'}`;
+    status = `Next player: ${xIsNext ? 'O' : 'X'}`;
   }
 
+  // ゲームの状態を表示する
+  // 勝者が決まった場合はそのプレイヤーを表示
+  // 勝者が決まっていない場合は次のプレイヤーを表示
   return (
     <>
       <div className="status">{status}</div>
@@ -99,3 +101,27 @@ export default function Board() {
   );
 }
 
+export default function Game() {
+  // 先手がデフォルトでXになるように設定
+  const [xIsNext, setXIsNext] = useState(true);
+  // 9つのブロックの状態を管理する
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  // 現在のブロックの状態を取得
+  const currentSquares = history[history.length - 1];
+
+  function handlePlay(nextSquares: Array<string | null>) {
+    setHistory([...history, nextSquares]);
+    setXIsNext(!xIsNext); // 次のプレイヤーを切り替える
+  }
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      </div>
+      <div className="game-info">
+        <ol>{/*TODO*/}</ol>
+      </div>
+    </div>
+  )
+}
