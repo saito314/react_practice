@@ -106,6 +106,7 @@ export default function Game() {
   const [xIsNext, setXIsNext] = useState(true);
   // 9つのブロックの状態を管理する
   const [history, setHistory] = useState([Array(9).fill(null)]);
+  const [currentMove, setCurrentMove] = useState(0);
   // 現在のブロックの状態を取得
   const currentSquares = history[history.length - 1];
 
@@ -115,7 +116,8 @@ export default function Game() {
   }
 
   function jumpTo(nextMove: number) {
-
+    setCurrentMove(nextMove);
+    setXIsNext(nextMove % 2 === 0);
   }
 
   const moves = history.map((squares, move) => {
@@ -126,7 +128,7 @@ export default function Game() {
       description = 'Go to game start';
     }
     return (
-      <li>
+      <li key={move}>
         <button onClick={() => jumpTo(move)}>{description}</button>
       </li>
     );
